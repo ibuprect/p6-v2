@@ -6,11 +6,10 @@ const CryptoJS = require('crypto-js');
 const jwt = require('jsonwebtoken');
 
 exports.signup = (req, res, next) => {
-  const encryptedEmail = CryptoJS.AES.encrypt(req.body.email, 'secret key').toString();
   bcrypt.hash(req.body.password, 10)
     .then(hash => {
       const user = new User({
-        email: encryptedEmail,
+        email: hash,
         password: hash
       });
       user.save()
@@ -26,10 +25,7 @@ exports.signup = (req, res, next) => {
     }));
   };
 exports.login = (req, res, next) => {
-  const decryptedEmail = CryptoJS.AES.decrypt(req.body.email, 'secret key').toString(CryptoJS.enc.Utf8);
-  User.findOne({
-      email: decryptedEmail
-    })
+  User.findOne({ email: req.body.email })
     .then(user => {
       if (!user) {
         return res.status(401).json({
